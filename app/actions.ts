@@ -107,3 +107,56 @@ export async function crearAbonoAction(
   revalidatePath("/abonos");
   return null;
 }
+
+export type ReservarResult = { error?: string; ok?: boolean; clase?: string; fecha?: string };
+
+export async function reservarAction(
+  prev: ReservarResult | null,
+  formData: FormData,
+): Promise<ReservarResult> {
+  const claseId = String(formData.get("claseId") ?? "");
+  const nombre = String(formData.get("nombre") ?? "").trim();
+  const telefono = String(formData.get("telefono") ?? "").trim() || null;
+
+  if (!claseId || !nombre) {
+    return { error: "Elegí una clase y escribí tu nombre." };
+  }
+
+  const clase = await prisma.clase.findUnique({
+    where: { id: claseId },
+    include: { servicio: true, profesora: true, reservas: true },
+  });
+  if (!clase) {
+    return { error: "La clase elegida ya no está disponible." };
+  }
+
+  const ocupadas = clase.reservas.filter((r) => r.estado === "Confirmada").length;
+  if (ocupadas >= clase.servicio.cupo) {
+    return { error: "Esta clase ya está completa. Elegí otra." };
+  }
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase() || null;
+  let alumna = email
+    ? await prisma.alumna.findFirst({ where: { email } })
+    : null;
+  if (!alumna) {
+    alumna = await prisma.alumna.create({
+      data: { nombre, email, telefono },
+    });
+  }
+
+  await prisma.reserva.create({
+    data: { claseId, alumnaId: alumna.id, estado: "Confirmada" },
+  });
+
+  revalidatePath("/reservar");
+  revalidatePath("/reserva");
+  revalidatePath("/agenda");
+  revalidatePath("/");
+
+  return {
+    ok: true,
+    clase: `${clase.horaInicio} · ${clase.servicio.nombre}`,
+    fecha: clase.fecha.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }),
+  };
+}
