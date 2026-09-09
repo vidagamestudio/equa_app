@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function ServiciosPage() {
-  const servicios = await prisma.servicio.findMany({ where: { activo: true } });
+  const user = await getCurrentUser();
+  const servicios = await prisma.servicio.findMany({ where: { estudioId: user.estudioId, activo: true } });
 
   return (
     <>

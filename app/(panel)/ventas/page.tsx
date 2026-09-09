@@ -1,17 +1,20 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
 import { RegistrarVentaForm } from "@/components/RegistrarVentaForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function VentasPage() {
+  const user = await getCurrentUser();
   const ventas = await prisma.venta.findMany({
+    where: { estudioId: user.estudioId },
     include: { alumna: true },
     orderBy: { fecha: "desc" },
     take: 20,
   });
   const total = ventas.reduce((s, v) => s + v.monto, 0);
-  const alumnas = await prisma.alumna.findMany({ where: { activa: true }, select: { id: true, nombre: true }, orderBy: { nombre: "asc" } });
+  const alumnas = await prisma.alumna.findMany({ where: { estudioId: user.estudioId, activa: true }, select: { id: true, nombre: true }, orderBy: { nombre: "asc" } });
 
   return (
     <>

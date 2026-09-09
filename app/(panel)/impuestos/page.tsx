@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function ImpuestosPage() {
+  const user = await getCurrentUser();
   const desde = new Date();
   desde.setMonth(desde.getMonth() - 12);
 
-  const ventas = await prisma.venta.findMany({ where: { fecha: { gte: desde } } });
+  const ventas = await prisma.venta.findMany({ where: { estudioId: user.estudioId, fecha: { gte: desde } } });
   const facturado12 = ventas.reduce((s, v) => s + v.monto, 0);
 
   const tope = 9200000;

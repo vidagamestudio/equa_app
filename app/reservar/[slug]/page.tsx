@@ -1,8 +1,8 @@
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ReservaForm } from "@/components/ReservaForm";
-import { brand } from "@/lib/brand";
 
-export const metadata = { title: `Reservar · ${brand.name}` };
+export const metadata = { title: "Reservar" };
 
 function startOfDay(d = new Date()) {
   const x = new Date(d);
@@ -12,12 +12,18 @@ function startOfDay(d = new Date()) {
 
 export const dynamic = "force-dynamic";
 
-export default async function ReservarPublicPage() {
+export default async function ReservarPublicPage({ params }: PageProps<"/reservar/[slug]">) {
+  const { slug } = await params;
+  const estudio = await prisma.estudio.findUnique({ where: { slug } });
+  if (!estudio) {
+    notFound();
+  }
+
   const today = startOfDay();
   const end = new Date(today.getTime() + 6 * 86400000);
 
   const clases = await prisma.clase.findMany({
-    where: { fecha: { gte: today, lt: end } },
+    where: { estudioId: estudio.id, fecha: { gte: today, lt: end } },
     orderBy: [{ fecha: "asc" }, { horaInicio: "asc" }],
     include: { servicio: true, profesora: true, reservas: true },
   });
@@ -34,21 +40,23 @@ export default async function ReservarPublicPage() {
     }))
     .filter((c) => c.ocupadas < c.cupo);
 
+  const mark = estudio.marca.slice(0, 1).toUpperCase();
+
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "40px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <div
           style={{
             width: 44, height: 44, borderRadius: 12,
-            background: `linear-gradient(135deg,${brand.accent},${brand.accentStrong})`, color: "#fff",
+            background: `linear-gradient(135deg,${estudio.accent},${estudio.accentStrong})`, color: "#fff",
             display: "grid", placeItems: "center", fontWeight: 700,
           }}
         >
-          {brand.mark}
+          {mark}
         </div>
         <div>
-          <div style={{ fontWeight: 700 }}>{brand.name}</div>
-          <div className="muted" style={{ fontSize: 12 }}>{brand.short}</div>
+          <div style={{ fontWeight: 700 }}>{estudio.nombre}</div>
+          <div className="muted" style={{ fontSize: 12 }}>{estudio.corto || estudio.subtitulo}</div>
         </div>
       </div>
 
@@ -63,12 +71,12 @@ export default async function ReservarPublicPage() {
         </div>
       ) : (
         <div className="card card-pad">
-          <ReservaForm clases={disponibles} />
+          <ReservaForm clases={disponibles} estudioId={estudio.id} />
         </div>
       )}
 
       <p className="muted" style={{ fontSize: 12, marginTop: 20, textAlign: "center" }}>
-        {brand.name} {brand.short} · {brand.city}
+        {estudio.nombre} {estudio.corto} · {estudio.ciudad}
       </p>
     </div>
   );

@@ -1,18 +1,26 @@
 import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { Sidebar } from "@/components/Sidebar";
 import { LogoutButton } from "@/components/LogoutButton";
-import { brand } from "@/lib/brand";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  const estudio = await prisma.estudio.findUnique({ where: { id: user.estudioId } });
+
+  const brand = {
+    nombre: estudio?.nombre ?? "Estudio",
+    subtitulo: estudio?.subtitulo ?? "Gestión",
+    corto: estudio?.corto ?? "",
+    marca: estudio?.marca ?? "A",
+  };
 
   return (
     <div className="app">
-      <Sidebar />
+      <Sidebar estudio={brand} />
       <div className="main">
         <header className="topbar">
           <div className="breadcrumb">
-            <span className="title">{brand.name} {brand.short}</span>
+            <span className="title">{brand.nombre} {brand.corto}</span>
           </div>
           <div className="flex">
             <div className="user-chip">

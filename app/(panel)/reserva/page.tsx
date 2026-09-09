@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { shortDate } from "@/lib/format";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 
@@ -13,12 +14,14 @@ function startOfDay(d = new Date()) {
 export const dynamic = "force-dynamic";
 
 export default async function ReservaPage() {
+  const user = await getCurrentUser();
+  const estudio = await prisma.estudio.findUnique({ where: { id: user.estudioId } });
   const today = startOfDay();
   const tomorrow = new Date(today.getTime() + 86400000);
 
   const [proximas, h] = await Promise.all([
     prisma.clase.findMany({
-      where: { fecha: { gte: today, lt: tomorrow } },
+      where: { estudioId: user.estudioId, fecha: { gte: today, lt: tomorrow } },
       orderBy: { horaInicio: "asc" },
       include: { servicio: true, profesora: true, reservas: true },
       take: 6,
@@ -28,7 +31,7 @@ export default async function ReservaPage() {
 
   const host = h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? "https";
-  const reservarUrl = `${proto}://${host}/reservar`;
+  const reservarUrl = `${proto}://${host}/reservar/${estudio?.slug ?? ""}`;
 
   const qrDataUrl = await QRCode.toDataURL(reservarUrl, {
     margin: 1,

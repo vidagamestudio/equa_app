@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
 const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -12,13 +13,14 @@ function startOfDay(d = new Date()) {
 export const dynamic = "force-dynamic";
 
 export default async function AgendaPage() {
+  const user = await getCurrentUser();
   const today = startOfDay();
   const week = Array.from({ length: 7 }, (_, i) => new Date(today.getTime() + i * 86400000));
   const first = week[0];
   const last = new Date(week[6].getTime() + 86400000);
 
   const clases = await prisma.clase.findMany({
-    where: { fecha: { gte: first, lt: last } },
+    where: { estudioId: user.estudioId, fecha: { gte: first, lt: last } },
     orderBy: [{ fecha: "asc" }, { horaInicio: "asc" }],
     include: { servicio: true, profesora: true, reservas: { include: { alumna: true } } },
   });

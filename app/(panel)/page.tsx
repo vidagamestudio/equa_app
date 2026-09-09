@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money, longDate, shortDate } from "@/lib/format";
 
 function startOfDay(d = new Date()) {
@@ -11,26 +12,27 @@ function startOfDay(d = new Date()) {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const user = await getCurrentUser();
   const today = startOfDay();
   const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
   const [clasesHoy, ventasHoy, activas, abonos, alumnaCount] = await Promise.all([
     prisma.clase.findMany({
-      where: { fecha: { gte: today, lt: tomorrow } },
+      where: { estudioId: user.estudioId, fecha: { gte: today, lt: tomorrow } },
       orderBy: { horaInicio: "asc" },
       include: { servicio: true, profesora: true, reservas: true },
     }),
-    prisma.venta.findMany({ where: { fecha: { gte: today, lt: tomorrow } } }),
+    prisma.venta.findMany({ where: { estudioId: user.estudioId, fecha: { gte: today, lt: tomorrow } } }),
     prisma.abono.findMany({
-      where: { estado: { in: ["Al día", "Vence pronto"] } },
+      where: { estudioId: user.estudioId, estado: { in: ["Al día", "Vence pronto"] } },
       include: { alumna: true },
     }),
     prisma.abono.findMany({
-      where: { estado: { in: ["Vencido", "Vence pronto"] } },
+      where: { estudioId: user.estudioId, estado: { in: ["Vencido", "Vence pronto"] } },
       include: { alumna: true },
       orderBy: { fechaFin: "asc" },
     }),
-    prisma.alumna.count({ where: { activa: true } }),
+    prisma.alumna.count({ where: { estudioId: user.estudioId, activa: true } }),
   ]);
 
   const cupos = clasesHoy.reduce((s, c) => s + c.servicio.cupo, 0);

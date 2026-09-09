@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function AbonosPage() {
+  const user = await getCurrentUser();
   const planes = [
     { nombre: "Clase suelta", precio: "desde $3.200", desc: "Sin vencimiento, se paga por clase" },
     { nombre: "Pack 4 clases", precio: "$14.800", desc: "Vence a los 30 días" },
@@ -12,6 +14,7 @@ export default async function AbonosPage() {
   ];
 
   const abonos = await prisma.abono.findMany({
+    where: { estudioId: user.estudioId },
     include: { alumna: true },
     orderBy: { fechaInicio: "desc" },
     take: 12,

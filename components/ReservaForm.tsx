@@ -13,13 +13,14 @@ type Clase = {
   fecha: string;
 };
 
-export function ReservaForm({ clases }: { clases: Clase[] }) {
+export function ReservaForm({ clases, estudioId }: { clases: Clase[]; estudioId: string }) {
   const [selected, setSelected] = useState<string>(clases[0]?.id ?? "");
   const [state, formAction, pending] = useActionState(reservarAction, null);
 
   return (
     <form action={formAction}>
       <input type="hidden" name="claseId" value={selected} />
+      <input type="hidden" name="estudioId" value={estudioId} />
 
       <div className="field">
         <label>Clase</label>

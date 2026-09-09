@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
 import { AltaAlumnaForm } from "@/components/AltaAlumnaForm";
 
@@ -9,8 +10,9 @@ function initials(nombre: string) {
 export const dynamic = "force-dynamic";
 
 export default async function AlumnasPage() {
+  const user = await getCurrentUser();
   const alumnas = await prisma.alumna.findMany({
-    where: { activa: true },
+    where: { estudioId: user.estudioId, activa: true },
     include: {
       abonos: { orderBy: { fechaInicio: "desc" } },
       ventas: { orderBy: { fecha: "desc" } },

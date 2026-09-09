@@ -7,15 +7,43 @@ datasource db {
   provider = "postgresql"
 }
 
+model Estudio {
+  id            String                  @id @default(cuid())
+  nombre        String
+  subtitulo     String                  @default("Gestión")
+  corto         String                  @default("")
+  ciudad        String                  @default("")
+  marca         String                  @default("A")
+  accent        String                  @default("#6d5bd0")
+  accentStrong  String                  @default("#5a49b8")
+  accentSoft    String                  @default("#efeefb")
+  slug          String                  @unique
+  users         User[]
+  profesoras    Profesora[]
+  servicios     Servicio[]
+  alumnas       Alumna[]
+  abonos        Abono[]
+  clases        Clase[]
+  reservas      Reserva[]
+  ventas        Venta[]
+  compras       Compra[]
+  gastos        Gasto[]
+  liquidaciones LiquidacionProfesora[]
+}
+
 model User {
-  id           String @id @default(cuid())
-  email        String @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
   passwordHash String
   name         String
+  estudioId    String
+  estudio      Estudio  @relation(fields: [estudioId], references: [id])
 }
 
 model Profesora {
   id            String                  @id @default(cuid())
+  estudioId     String
+  estudio       Estudio                 @relation(fields: [estudioId], references: [id])
   nombre        String
   tarifaHora    Int
   activa        Boolean                 @default(true)
@@ -24,28 +52,34 @@ model Profesora {
 }
 
 model Servicio {
-  id       String  @id @default(cuid())
-  nombre   String
-  precio   Int
-  cupo     Int
-  duracion Int
-  activo   Boolean @default(true)
-  clases   Clase[]
+  id        String   @id @default(cuid())
+  estudioId String
+  estudio   Estudio  @relation(fields: [estudioId], references: [id])
+  nombre    String
+  precio    Int
+  cupo      Int
+  duracion  Int
+  activo    Boolean  @default(true)
+  clases    Clase[]
 }
 
 model Alumna {
-  id       String    @id @default(cuid())
-  nombre   String
-  email    String?
-  telefono String?
-  activa   Boolean   @default(true)
-  abonos   Abono[]
-  reservas Reserva[]
-  ventas   Venta[]
+  id        String   @id @default(cuid())
+  estudioId String
+  estudio   Estudio  @relation(fields: [estudioId], references: [id])
+  nombre    String
+  email     String?
+  telefono  String?
+  activa    Boolean  @default(true)
+  abonos    Abono[]
+  reservas  Reserva[]
+  ventas    Venta[]
 }
 
 model Abono {
   id            String   @id @default(cuid())
+  estudioId     String
+  estudio       Estudio  @relation(fields: [estudioId], references: [id])
   alumnaId      String
   alumna        Alumna   @relation(fields: [alumnaId], references: [id])
   tipo          String
@@ -60,6 +94,8 @@ model Abono {
 
 model Clase {
   id          String    @id @default(cuid())
+  estudioId   String
+  estudio     Estudio   @relation(fields: [estudioId], references: [id])
   fecha       DateTime
   horaInicio  String
   servicioId  String
@@ -70,16 +106,20 @@ model Clase {
 }
 
 model Reserva {
-  id       String @id @default(cuid())
-  claseId  String
-  clase    Clase  @relation(fields: [claseId], references: [id])
-  alumnaId String
-  alumna   Alumna @relation(fields: [alumnaId], references: [id])
-  estado   String @default("Confirmada")
+  id        String  @id @default(cuid())
+  estudioId String
+  estudio   Estudio @relation(fields: [estudioId], references: [id])
+  claseId   String
+  clase     Clase   @relation(fields: [claseId], references: [id])
+  alumnaId  String
+  alumna    Alumna  @relation(fields: [alumnaId], references: [id])
+  estado    String  @default("Confirmada")
 }
 
 model Venta {
   id              String  @id @default(cuid())
+  estudioId       String
+  estudio         Estudio @relation(fields: [estudioId], references: [id])
   fecha           DateTime
   alumnaId        String
   alumna          Alumna  @relation(fields: [alumnaId], references: [id])
@@ -92,7 +132,9 @@ model Venta {
 }
 
 model Compra {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
+  estudioId String
+  estudio   Estudio  @relation(fields: [estudioId], references: [id])
   fecha     DateTime
   proveedor String
   concepto  String
@@ -101,6 +143,8 @@ model Compra {
 
 model Gasto {
   id        String   @id @default(cuid())
+  estudioId String
+  estudio   Estudio  @relation(fields: [estudioId], references: [id])
   fecha     DateTime
   categoria String
   concepto  String
@@ -109,6 +153,8 @@ model Gasto {
 
 model LiquidacionProfesora {
   id          String    @id @default(cuid())
+  estudioId   String
+  estudio     Estudio   @relation(fields: [estudioId], references: [id])
   mes         String
   profesoraId String
   profesora   Profesora @relation(fields: [profesoraId], references: [id])

@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { brand } from "@/lib/brand";
+
+export type EstudioBrand = {
+  nombre: string;
+  subtitulo: string;
+  corto: string;
+  marca: string;
+};
 
 const NAV = [
   { group: "Panel", items: [{ href: "/", label: "Panel" }] },
@@ -34,15 +40,16 @@ const NAV = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ estudio }: { estudio: EstudioBrand }) {
   const pathname = usePathname();
+  const mark = estudio.marca.slice(0, 1).toUpperCase();
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="mark">{brand.mark}</div>
+        <div className="mark">{mark}</div>
         <div>
-          <div className="name">{brand.name}</div>
-          <div className="sub">{brand.subtitle}</div>
+          <div className="name">{estudio.nombre}</div>
+          <div className="sub">{estudio.subtitulo}</div>
         </div>
       </div>
 

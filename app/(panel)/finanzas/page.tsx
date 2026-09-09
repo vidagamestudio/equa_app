@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 
 function monthBounds(d = new Date()) {
@@ -10,14 +11,15 @@ function monthBounds(d = new Date()) {
 export const dynamic = "force-dynamic";
 
 export default async function FinanzasPage() {
+  const user = await getCurrentUser();
   const { start, end } = monthBounds();
   const mes = start.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
 
   const [ventas, gastos, compras, liquidaciones] = await Promise.all([
-    prisma.venta.findMany({ where: { fecha: { gte: start, lt: end } } }),
-    prisma.gasto.findMany({ where: { fecha: { gte: start, lt: end } } }),
-    prisma.compra.findMany({ where: { fecha: { gte: start, lt: end } } }),
-    prisma.liquidacionProfesora.findMany(),
+    prisma.venta.findMany({ where: { estudioId: user.estudioId, fecha: { gte: start, lt: end } } }),
+    prisma.gasto.findMany({ where: { estudioId: user.estudioId, fecha: { gte: start, lt: end } } }),
+    prisma.compra.findMany({ where: { estudioId: user.estudioId, fecha: { gte: start, lt: end } } }),
+    prisma.liquidacionProfesora.findMany({ where: { estudioId: user.estudioId } }),
   ]);
 
   const facturado = ventas.reduce((s, v) => s + v.monto, 0);

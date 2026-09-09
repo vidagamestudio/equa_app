@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function ComprasPage() {
-  const compras = await prisma.compra.findMany({ orderBy: { fecha: "desc" } });
+  const user = await getCurrentUser();
+  const compras = await prisma.compra.findMany({ where: { estudioId: user.estudioId }, orderBy: { fecha: "desc" } });
   const total = compras.reduce((s, c) => s + c.monto, 0);
 
   return (

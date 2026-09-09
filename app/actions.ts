@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { loginUser, logoutUser } from "@/lib/auth";
+import { loginUser, logoutUser, getCurrentUser } from "@/lib/auth";
 
 export async function loginAction(prev: { error?: string } | undefined, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -35,8 +35,13 @@ export async function registrarVentaAction(
   if (!alumnaId || !concepto || !monto) {
     return { error: "Completá alumna, concepto y monto." };
   }
+  const user = await getCurrentUser();
+  const alumna = await prisma.alumna.findFirst({ where: { id: alumnaId, estudioId: user.estudioId } });
+  if (!alumna) {
+    return { error: "Alumna no válida." };
+  }
   await prisma.venta.create({
-    data: { fecha: new Date(), alumnaId, concepto, monto, medioPago, tipoComprobante },
+    data: { fecha: new Date(), alumnaId, estudioId: user.estudioId, concepto, monto, medioPago, tipoComprobante },
   });
   revalidatePath("/ventas");
   revalidatePath("/caja");
@@ -54,7 +59,8 @@ export async function altaAlumnaAction(
   if (!nombre) {
     return { error: "El nombre es obligatorio." };
   }
-  await prisma.alumna.create({ data: { nombre, email, telefono } });
+  const user = await getCurrentUser();
+  await prisma.alumna.create({ data: { nombre, email, telefono, estudioId: user.estudioId } });
   revalidatePath("/alumnas");
   return null;
 }
@@ -65,8 +71,9 @@ export async function marcarPagoProfesoraAction(
 ) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  await prisma.liquidacionProfesora.update({
-    where: { id },
+  const user = await getCurrentUser();
+  await prisma.liquidacionProfesora.updateMany({
+    where: { id, estudioId: user.estudioId },
     data: { estado: "Pagado" },
   });
   revalidatePath("/profesoras");
@@ -84,7 +91,8 @@ export async function registrarGastoAction(
   if (!concepto || !monto) {
     return { error: "Completá concepto y monto." };
   }
-  await prisma.gasto.create({ data: { fecha: new Date(), categoria, concepto, monto } });
+  const user = await getCurrentUser();
+  await prisma.gasto.create({ data: { fecha: new Date(), estudioId: user.estudioId, categoria, concepto, monto } });
   revalidatePath("/caja");
   revalidatePath("/finanzas");
   return null;
@@ -100,8 +108,13 @@ export async function crearAbonoAction(
   if (!alumnaId || !tipo || !precio) {
     return { error: "Completá alumna, tipo y precio." };
   }
+  const user = await getCurrentUser();
+  const alumna = await prisma.alumna.findFirst({ where: { id: alumnaId, estudioId: user.estudioId } });
+  if (!alumna) {
+    return { error: "Alumna no válida." };
+  }
   await prisma.abono.create({
-    data: { alumnaId, tipo, precio, fechaInicio: new Date(), estado: "Al día" },
+    data: { alumnaId, estudioId: user.estudioId, tipo, precio, fechaInicio: new Date(), estado: "Al día" },
   });
   revalidatePath("/alumnas");
   revalidatePath("/abonos");
@@ -115,15 +128,16 @@ export async function reservarAction(
   formData: FormData,
 ): Promise<ReservarResult> {
   const claseId = String(formData.get("claseId") ?? "");
+  const estudioId = String(formData.get("estudioId") ?? "");
   const nombre = String(formData.get("nombre") ?? "").trim();
   const telefono = String(formData.get("telefono") ?? "").trim() || null;
 
-  if (!claseId || !nombre) {
+  if (!claseId || !estudioId || !nombre) {
     return { error: "Elegí una clase y escribí tu nombre." };
   }
 
-  const clase = await prisma.clase.findUnique({
-    where: { id: claseId },
+  const clase = await prisma.clase.findFirst({
+    where: { id: claseId, estudioId },
     include: { servicio: true, profesora: true, reservas: true },
   });
   if (!clase) {
@@ -137,16 +151,16 @@ export async function reservarAction(
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase() || null;
   let alumna = email
-    ? await prisma.alumna.findFirst({ where: { email } })
+    ? await prisma.alumna.findFirst({ where: { email, estudioId } })
     : null;
   if (!alumna) {
     alumna = await prisma.alumna.create({
-      data: { nombre, email, telefono },
+      data: { nombre, email, telefono, estudioId },
     });
   }
 
   await prisma.reserva.create({
-    data: { claseId, alumnaId: alumna.id, estado: "Confirmada" },
+    data: { claseId, alumnaId: alumna.id, estudioId, estado: "Confirmada" },
   });
 
   revalidatePath("/reservar");

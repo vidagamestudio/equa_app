@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 import { PagarProfesoraButton } from "@/components/PagarProfesoraButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfesorasPage() {
+  const user = await getCurrentUser();
   const liquidaciones = await prisma.liquidacionProfesora.findMany({
+    where: { estudioId: user.estudioId },
     include: { profesora: true },
     orderBy: { mes: "asc" },
   });

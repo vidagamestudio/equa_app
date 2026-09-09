@@ -8,12 +8,14 @@ import { SESSION_OPTIONS } from "@/lib/session-options";
 
 export type SessionData = {
   userId?: string;
+  estudioId?: string;
 };
 
 export type User = {
   id: string;
   email: string;
   name: string;
+  estudioId: string;
 };
 
 export async function getSession() {
@@ -28,7 +30,7 @@ export async function getCurrentUser(): Promise<User> {
   }
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, estudioId: true },
   });
   if (!user) {
     redirect("/login");
@@ -47,6 +49,7 @@ export async function loginUser(email: string, password: string): Promise<boolea
   }
   const session = await getSession();
   session.userId = user.id;
+  session.estudioId = user.estudioId;
   await session.save();
   return true;
 }
