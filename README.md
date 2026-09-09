@@ -1,3 +1,9 @@
+# Estudio Aire · Gestión
+
+Sistema de gestión para un estudio de pilates: agenda, alumnas, profesoras, servicios, abonos, ventas, compras, reserva online, caja y finanzas.
+
+Built with [Next.js](https://nextjs.org) + React + TypeScript, Prisma y PostgreSQL.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
