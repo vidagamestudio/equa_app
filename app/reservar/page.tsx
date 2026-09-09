@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { ReservaForm } from "@/components/ReservaForm";
+import { brand } from "@/lib/brand";
 
-export const metadata = { title: "Reservar · Estudio Aire" };
+export const metadata = { title: `Reservar · ${brand.name}` };
 
 function startOfDay(d = new Date()) {
   const x = new Date(d);
@@ -39,15 +40,15 @@ export default async function ReservarPublicPage() {
         <div
           style={{
             width: 44, height: 44, borderRadius: 12,
-            background: "linear-gradient(135deg,#6d5bd0,#b18cff)", color: "#fff",
+            background: `linear-gradient(135deg,${brand.accent},${brand.accentStrong})`, color: "#fff",
             display: "grid", placeItems: "center", fontWeight: 700,
           }}
         >
-          A
+          {brand.mark}
         </div>
         <div>
-          <div style={{ fontWeight: 700 }}>Estudio Aire</div>
-          <div className="muted" style={{ fontSize: 12 }}>Pilates</div>
+          <div style={{ fontWeight: 700 }}>{brand.name}</div>
+          <div className="muted" style={{ fontSize: 12 }}>{brand.short}</div>
         </div>
       </div>
 
@@ -67,7 +68,7 @@ export default async function ReservarPublicPage() {
       )}
 
       <p className="muted" style={{ fontSize: 12, marginTop: 20, textAlign: "center" }}>
-        Estudio Aire Pilates · Buenos Aires
+        {brand.name} {brand.short} · {brand.city}
       </p>
     </div>
   );

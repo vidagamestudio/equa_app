@@ -87,7 +87,7 @@ button {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #b18cff);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
   display: grid;
   place-items: center;

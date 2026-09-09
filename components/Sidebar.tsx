@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { brand } from "@/lib/brand";
 
 const NAV = [
   { group: "Panel", items: [{ href: "/", label: "Panel" }] },
@@ -38,10 +39,10 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="mark">A</div>
+        <div className="mark">{brand.mark}</div>
         <div>
-          <div className="name">Estudio Aire</div>
-          <div className="sub">Pilates · Gestión</div>
+          <div className="name">{brand.name}</div>
+          <div className="sub">{brand.subtitle}</div>
         </div>
       </div>
 

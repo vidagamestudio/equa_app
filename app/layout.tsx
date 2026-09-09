@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { brand } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,13 +14,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Estudio Aire · Gestión",
-  description: "Sistema de gestión para Estudio Aire Pilates",
+  title: `${brand.name} · Gestión`,
+  description: `Sistema de gestión para ${brand.name} ${brand.short}`,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <style>{`
+          :root {
+            --accent: ${brand.accent};
+            --accent-strong: ${brand.accentStrong};
+            --accent-soft: ${brand.accentSoft};
+          }
+        `}</style>
+      </head>
       <body>{children}</body>
     </html>
   );

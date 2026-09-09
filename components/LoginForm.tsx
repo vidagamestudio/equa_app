@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginAction } from "@/app/actions";
+import { brand } from "@/lib/brand";
 
 const initialState = { error: undefined as string | undefined };
 
@@ -12,12 +13,12 @@ export function LoginForm() {
     <div className="login-wrap">
       <div className="login-card">
         <div className="logo">
-          <div className="mark" style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#6d5bd0,#b18cff)", color: "#fff", display: "grid", placeItems: "center", fontWeight: 700 }}>
-            A
+          <div className="mark" style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg,${brand.accent},${brand.accentStrong})`, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700 }}>
+            {brand.mark}
           </div>
           <div>
-            <div style={{ fontWeight: 700 }}>Estudio Aire</div>
-            <div className="muted" style={{ fontSize: 12 }}>Pilates</div>
+            <div style={{ fontWeight: 700 }}>{brand.name}</div>
+            <div className="muted" style={{ fontSize: 12 }}>{brand.short}</div>
           </div>
         </div>
 

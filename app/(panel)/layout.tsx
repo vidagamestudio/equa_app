@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { Sidebar } from "@/components/Sidebar";
 import { LogoutButton } from "@/components/LogoutButton";
+import { brand } from "@/lib/brand";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -11,7 +12,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       <div className="main">
         <header className="topbar">
           <div className="breadcrumb">
-            <span className="title">Estudio Aire Pilates</span>
+            <span className="title">{brand.name} {brand.short}</span>
           </div>
           <div className="flex">
             <div className="user-chip">
